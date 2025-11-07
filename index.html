@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>空军主力战机 · 图库与搜索</title>
+    <meta name="description" content="一个静态的战机图库示例，含本地搜索功能。" />
+    <style>
+        /* ------------------------------
+       Base styles (British English comments)
+       ------------------------------ */
+        :root {
+            --bg: #0b0f14;
+            --panel: #121821;
+            --panel-2: #0f141c;
+            --text: #e7eef7;
+            --muted: #9fb3c8;
+            --accent: #4ea1ff;
+            --ring: #2b77d1;
+            --card: #0f141c;
+            --border: #1e2937;
+            --shadow: 0 6px 18px rgba(0, 0, 0, .35);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f6f8fb;
+                --panel: #ffffff;
+                --panel-2: #ffffff;
+                --text: #0f172a;
+                --muted: #475569;
+                --accent: #2563eb;
+                --ring: #3b82f6;
+                --card: #ffffff;
+                --border: #e2e8f0;
+                --shadow: 0 6px 16px rgba(2, 6, 23, .08);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Noto Sans SC, HarmonyOS_Regular, Helvetica, Arial, "Microsoft YaHei", "微软雅黑", sans-serif;
+            background: radial-gradient(1200px 700px at 10% -10%, rgba(78, 161, 255, .12), transparent),
+                radial-gradient(1000px 600px at 90% 10%, rgba(78, 161, 255, .08), transparent),
+                var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(1180px, 92%);
+            margin: 0 auto;
+        }
+
+        /* ------------------------------
+       Header & search
+       ------------------------------ */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: linear-gradient(180deg, rgba(11, 15, 20, .9), rgba(11, 15, 20, .7));
+            backdrop-filter: saturate(140%) blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-bar {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 16px;
+            align-items: center;
+            padding: 16px 0;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            box-shadow: var(--shadow);
+        }
+
+        .logo b {
+            font-weight: 800;
+            letter-spacing: .5px;
+        }
+
+        .tagline {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .search {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-group {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .search-input {
+            border: 0;
+            outline: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 16px;
+            min-width: 160px;
+        }
+
+        .search-input::placeholder {
+            color: var(--muted);
+        }
+
+        .search-btn,
+        .clear-btn {
+            border: 0;
+            background: var(--accent);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .clear-btn {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .results-meta {
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .results-meta b {
+            color: var(--text);
+        }
+
+        /* ------------------------------
+       Grid & cards
+       ------------------------------ */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 16px;
+            margin: 20px 0 32px;
+        }
+
+        @media (min-width: 640px) {
+            .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--card), var(--panel));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .card:focus-within,
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, .35);
+        }
+
+        .card__media {
+            position: relative;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            background: #0b1220;
+        }
+
+        .card__media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card__body {
+            padding: 10px 12px 12px;
+        }
+
+        .card__title {
+            font-weight: 700;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.35;
+        }
+
+        .card__title small {
+            display: block;
+            color: var(--muted);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .more {
+            text-align: right;
+            margin: 4px 0 28px;
+        }
+
+        .more a {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        mark {
+            background: rgba(78, 161, 255, .25);
+            color: inherit;
+            padding: 0 .12em;
+            border-radius: 4px;
+        }
+
+        .no-results {
+            display: none;
+            text-align: center;
+            color: var(--muted);
+            padding: 40px 0 30px;
+        }
+
+        .no-results.show {
+            display: block;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 22px 0 40px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container brand-bar">
+            <a class="logo" href="#" aria-label="空军主力战机 首页">
+                <span aria-hidden>🛩️</span>
+                <span>
+                    <b>空军主力战机</b>
+                    <span class="tagline">图库示例 · 静态页面</span>
+                </span>
+            </a>
+            <div class="search">
+                <form class="search-group" id="searchForm" role="search" autocomplete="off">
+                    <input id="q" class="search-input" type="search" inputmode="search"
+                        placeholder="搜索型号 / 代号 / 关键字…（如：SR-71, 苏-30, 隐形）" aria-label="站内搜索" />
+                    <button type="button" class="clear-btn" id="clearBtn" aria-label="清除">清除</button>
+                    <button class="search-btn" aria-label="搜索">搜索</button>
+                </form>
+                <div class="results-meta" aria-live="polite" aria-atomic="true">
+                    已收录 <b id="totalCount">0</b> 架机型 · 搜到 <b id="visibleCount">0</b> 条
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" id="main">
+        <section class="grid" id="gallery" aria-label="战机图库">
+            <!-- Card items. Replace image src with your own assets. -->
+
+            <article class="card" data-index="歼-20 j-20 威龙 中国" data-title="j-20 威龙 战斗机 (J-20)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\j 20.jpg" alt="j-20 威龙 战斗机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">j-20 威龙 战斗机 (J-20)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="歼-35 j-35 云龙 中国" data-title="j-35 云龙 战斗机 (J-35)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\j 35.png" alt="j-35 云龙 战斗机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">j-35 云龙 战斗机 (J-35)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="歼-31 鹘鹰 j-31 隐身 战斗机 中国" data-title="歼-31 鹘鹰 战斗机 (J-31)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\j 31.webp" alt="歼-31 鹘鹰 战斗机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">歼-31 鹘鹰 战斗机 (J-31)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="歼-16 j-16 潜龙 战斗机 中国" data-title="j-16 潜龙 战斗机 (J-16)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\J 16.png" alt="j-16 潜龙 战斗机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">j-16 潜龙 战斗机 (J-16)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="歼-11 j-11 战斗机 中国" data-title="歼-11 战斗机 (J-11)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\j 11.jpg" alt="歼-11 战斗机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">歼-11 战斗机 (J-11)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="歼轰-7 jh-7 飞豹 对地 攻击 战斗轰炸" data-title="歼轰-7 飞豹 战斗轰炸机 (JH-7)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\jh 7.webp" alt="歼轰-7 飞豹 战斗轰炸机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">歼轰-7 飞豹 战斗轰炸机 (JH-7)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="轰-6 h-6 轰炸机 中国" data-title="轰-6 轰炸机 (H-6 系)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\h 6.jpg" alt="轰-6 轰炸机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">轰-6 轰炸机 (H-6 系)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="sr-71 黑鸟 侦察 美国 blackbird reconnaissance" data-title="SR-71 黑鸟侦察机 (SR-71)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\黑鸟.jpg" alt="SR-71 黑鸟侦察机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">SR-71 黑鸟侦察机 (SR-71)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="ah-64 阿帕奇 武装 直升机 攻击 apache" data-title="AH-64 阿帕奇 武装直升机">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\阿帕奇.jpeg" alt="AH-64 阿帕奇 武装直升机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">AH-64 阿帕奇 武装直升机</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="p-8 海神 反潜 巡逻 机 p8 poseidon" data-title="P-8 海神 反潜巡逻机">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\p 8.jpg" alt="P-8 海神 反潜巡逻机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">P-8 海神 反潜巡逻机</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="米格-31 mig-31 拦截机 俄罗斯" data-title="米格-31 拦截机 战斗机 (Mig-31)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\mig 31.jpg" alt="米格-31 拦截战斗机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">米格-31 拦截机 战斗机 (Mig-31)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="fc-1 枭龙 jf-17 中国 巴基斯坦 轻型 战斗机" data-title="FC-1 枭龙 战斗机 (JF-17)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\jf 17.jpg" alt="FC-1 枭龙 战斗机 JF-17" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">FC-1 枭龙 战斗机 (JF-17)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="a-10 雷电 攻击机 攻击 近距支援 美国" data-title="A-10 雷电 攻击机 (A10)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\a 10.jpg" alt="A-10 雷电 攻击机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">A-10 雷电 攻击机 (A10)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="c-17 环球霸王 iii 运输机 美国" data-title="C-17 环球霸王Ⅲ 运输机 (C-17)">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\c 17.jpg" alt="C-17 环球霸王Ⅲ 运输机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">C-17 环球霸王Ⅲ 运输机 (C-17)</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="苏-30 su-30 侧卫 战斗机 俄罗斯" data-title="苏-30 (Su-30) 战斗机">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\s 30.jpg" alt="苏-30 战斗机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">苏-30 (Su-30) 战斗机</h3>
+                    </div>
+                </a>
+            </article>
+
+            <article class="card" data-index="f/a-18 f18 大黄蜂 hornet 舰载 战斗机" data-title="F/A-18 大黄蜂 舰载机">
+                <a class="card__link" href="#">
+                    <div class="card__media">
+                        <img loading="lazy" src="s:\web期末\f 18.jpg" alt="F/A-18 大黄蜂 舰载机" />
+                    </div>
+                    <div class="card__body">
+                        <h3 class="card__title">F/A-18 大黄蜂 舰载机</h3>
+                    </div>
+                </a>
+            </article>
+
+            <p class="no-results" id="noResults">没有找到匹配的机型，请换个关键词试试。</p>
+    </main>
+
+    <footer>
+        <div class="container">
+            © <span id="y"></span> 空军主力战机 · 纯静态示例。仅作界面演示，请遵守来源网站的版权与 robots 协议。
+        </div>
+    </footer>
+
+    <script>
+        // ------------------------------
+        // Progressive enhancement: simple client-side search with highlighting
+        // ------------------------------
+        (function () {
+            const $ = (sel, root = document) => root.querySelector(sel);
+            const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+            const input = $('#q');
+            const form = $('#searchForm');
+            const clearBtn = $('#clearBtn');
+            const cards = $$('.card');
+            const totalCount = $('#totalCount');
+            const visibleCount = $('#visibleCount');
+            const noResults = $('#noResults');
+            const year = new Date().getFullYear();
+            $('#y').textContent = year;
+
+            totalCount.textContent = cards.length;
+
+            // Pre-populate from URL param for deep-linking
+            const params = new URLSearchParams(location.search);
+            if (params.has('q')) {
+                input.value = params.get('q').trim();
+            }
+
+            function normalise(str) {
+                return (str || '')
+                    .toLowerCase()
+                    .normalize('NFKC')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
+            function setHidden(el, hidden) {
+                el.hidden = hidden; // semantic hiding
+                el.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+            }
+
+            // Highlight the matching part of the title using <mark>
+            function highlightTitle(card, term) {
+                const h3 = card.querySelector('.card__title');
+                const original = card.dataset.title || h3.textContent;
+                if (!term) { h3.innerHTML = original; return; }
+                const idx = original.toLowerCase().indexOf(term.toLowerCase());
+                if (idx === -1) { h3.innerHTML = original; return; }
+                const before = original.slice(0, idx);
+                const match = original.slice(idx, idx + term.length);
+                const after = original.slice(idx + term.length);
+                h3.innerHTML = `${before}<mark>${match}</mark>${after}`;
+            }
+
+            function applySearch(termRaw) {
+                const term = normalise(termRaw);
+                // Keep URL in sync for shareable queries (no history spam)
+                const url = new URL(location.href);
+                if (term) url.searchParams.set('q', term); else url.searchParams.delete('q');
+                history.replaceState(null, '', url);
+
+                let shown = 0;
+                cards.forEach(card => {
+                    const hay = normalise(card.dataset.index + ' ' + card.dataset.title);
+                    const hit = term ? hay.includes(term) : true;
+                    setHidden(card, !hit);
+                    highlightTitle(card, term);
+                    if (hit) shown++;
+                });
+                visibleCount.textContent = shown;
+                noResults.classList.toggle('show', shown === 0);
+            }
+
+            form.addEventListener('submit', (e) => { e.preventDefault(); applySearch(input.value); });
+            input.addEventListener('input', () => applySearch(input.value));
+            clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); applySearch(''); });
+
+            // First paint
+            applySearch(input.value);
+        })();
+    </script>
+</body>
+
+</html>
