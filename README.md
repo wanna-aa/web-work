@@ -38,7 +38,7 @@ git push origin main
 
 ### 方法2：使用GitHub网页上传
 
-1. 进入你的仓库 https://github.com/antushenguzi/web-work
+1. 进入你的仓库 https://github.com/wanna-aa/web-work
 2. 点击 "Add file" → "Upload files"
 3. 上传所有HTML、CSS、JS文件
 4. 点击 "Commit changes"
